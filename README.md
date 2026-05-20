@@ -53,6 +53,17 @@ python -m pip install uv
 uv sync --extra dev
 ```
 
+## Use It
+
+If you only want to connect the MCP server to a client, start here:
+
+```bash
+bash scripts/print_mcp_config.sh
+```
+
+Then paste the printed config into Codex, Claude Desktop, Cursor, or another MCP client.
+See [docs/USAGE.md](docs/USAGE.md) for copy-paste examples and mock-provider test calls.
+
 ## Configuration
 
 Copy `.env.example` to `.env` for local development. The default provider is `mock`, which requires no credentials.
