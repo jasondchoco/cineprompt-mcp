@@ -7,6 +7,7 @@ from cineprompt_mcp.providers.mock import MockProvider
 from cineprompt_mcp.tools import (
     build_reference_pack_tool,
     check_derivative_risk_tool,
+    generate_video_prompt_tool,
     get_person_filmography_tool,
     get_title_detail_tool,
     search_people_tool,
@@ -66,3 +67,22 @@ def test_check_derivative_risk_tool_happy_path() -> None:
     report = check_derivative_risk_tool("A tense workplace thriller.")
 
     assert report.level == "low"
+
+
+@pytest.mark.asyncio
+async def test_generate_video_prompt_tool_happy_path() -> None:
+    prompt_pack = await generate_video_prompt_tool(MockProvider(), "mock", "mock-title-1", "movie")
+
+    assert prompt_pack.short_prompt
+    assert prompt_pack.long_prompt
+    assert len(prompt_pack.shot_list) >= 1
+    assert "no actor likeness" in prompt_pack.negative_prompt
+
+
+@pytest.mark.asyncio
+async def test_generate_video_prompt_tool_omits_reference_names() -> None:
+    prompt_pack = await generate_video_prompt_tool(MockProvider(), "mock", "mock-title-1", "movie")
+
+    combined = " ".join([prompt_pack.short_prompt, prompt_pack.long_prompt, *prompt_pack.shot_list])
+    assert "Glass City" not in combined
+    assert "Mira Han" not in combined

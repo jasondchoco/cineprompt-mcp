@@ -16,6 +16,7 @@ EXPECTED_TOOLS = {
     "get_person_filmography",
     "build_reference_pack",
     "check_derivative_risk",
+    "generate_video_prompt",
 }
 
 EXPECTED_PROMPTS = {
@@ -50,6 +51,12 @@ async def run_smoke() -> None:
             search_result = await session.call_tool("search_titles", {"query": "Glass"})
             if search_result.isError:
                 raise RuntimeError("search_titles returned an MCP error.")
+            video_result = await session.call_tool(
+                "generate_video_prompt",
+                {"provider": "mock", "provider_id": "mock-title-1", "duration_seconds": 15},
+            )
+            if video_result.isError:
+                raise RuntimeError("generate_video_prompt returned an MCP error.")
             prompt_result = await session.get_prompt(
                 "video_prompt_from_reference",
                 arguments={"reference_pack_json": "{}", "duration_seconds": "12"},

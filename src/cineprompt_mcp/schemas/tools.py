@@ -46,3 +46,12 @@ class BuildReferencePackInput(CinePromptModel):
 class CheckDerivativeRiskInput(CinePromptModel):
     text: NonEmptyStr
     reference_terms: list[NonEmptyStr] = Field(default_factory=list, max_length=20)
+
+
+class GenerateVideoPromptInput(CinePromptModel):
+    provider: NonEmptyStr
+    provider_id: NonEmptyStr
+    media_type: MediaType | None = None
+    focus: str | None = None
+    duration_seconds: Annotated[int, Field(ge=5, le=300)] = 20
+    aspect_ratio: NonEmptyStr = "16:9"
