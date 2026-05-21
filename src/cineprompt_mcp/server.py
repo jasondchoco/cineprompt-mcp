@@ -23,6 +23,7 @@ from cineprompt_mcp.services.provider_registry import ProviderRegistry
 from cineprompt_mcp.tools import (
     build_reference_pack_tool,
     check_derivative_risk_tool,
+    generate_video_prompt_tool,
     get_person_filmography_tool,
     get_title_detail_tool,
     search_people_tool,
@@ -109,6 +110,29 @@ def create_server(registry: ProviderRegistry | None = None) -> FastMCP:
 
         report = check_derivative_risk_tool(text, reference_terms)
         return report.to_public_dict()
+
+    @mcp.tool()
+    async def generate_video_prompt(
+        provider: str,
+        provider_id: str,
+        media_type: MediaType | None = None,
+        focus: str | None = None,
+        duration_seconds: int = 20,
+        aspect_ratio: str = "16:9",
+    ) -> dict[str, Any]:
+        """Generate a safe AI video prompt pack from a title reference."""
+
+        selected_provider = provider_registry.get(provider)
+        prompt_pack = await generate_video_prompt_tool(
+            selected_provider,
+            provider,
+            provider_id,
+            media_type,
+            focus,
+            duration_seconds,
+            aspect_ratio,
+        )
+        return prompt_pack.to_public_dict()
 
     @mcp.prompt()
     def cinematic_reference_pack(title_or_query: str, focus: str | None = None) -> str:

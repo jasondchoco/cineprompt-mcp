@@ -27,11 +27,7 @@ def build_reference_pack_from_detail(
             f"A {genre_text} engine built around escalating pressure, visible choices, "
             f"and consequences shaped by {keyword_text}{focus_note}."
         ),
-        character_dynamics=[
-            "A protagonist wants security but must trade comfort for agency.",
-            "A gatekeeping institution turns ordinary ambition into moral pressure.",
-            "Secondary characters reveal different survival strategies under the same rules.",
-        ],
+        character_dynamics=_character_dynamics(detail),
         genre_mechanics=_genre_mechanics(detail.genres),
         visual_language=visual_language,
         prompt_hooks=[
@@ -58,6 +54,55 @@ def _genre_mechanics(genres: list[str]) -> list[str]:
     if "workplace" in genre_text:
         mechanics.append("institutional rules that turn colleagues into competitors")
     return mechanics
+
+
+def _character_dynamics(detail: TitleDetail) -> list[str]:
+    genre_text = " ".join(detail.genres + detail.keywords).lower()
+    cast_count = len(detail.cast or [])
+    dynamics: list[str] = []
+
+    if cast_count >= 2:
+        dynamics.append(
+            "A protagonist navigating competing loyalties as someone close reveals a hidden agenda."
+        )
+        dynamics.append(
+            "An outsider figure who exposes the unspoken rules everyone else follows silently."
+        )
+    elif cast_count == 1:
+        dynamics.append(
+            "A lone actor within a system that rewards compliance and punishes visibility."
+        )
+    else:
+        dynamics.append("A protagonist wants security but must trade comfort for agency.")
+
+    if "thriller" in genre_text or "mystery" in genre_text:
+        dynamics.append(
+            "An information broker whose partial knowledge becomes both survival tool"
+            " and liability."
+        )
+    if "workplace" in genre_text or "institution" in genre_text:
+        dynamics.append("A gatekeeper who turns ordinary ambition into a moral test.")
+    if "class" in genre_text or "social" in genre_text:
+        dynamics.append(
+            "Secondary characters who embody competing survival strategies under the same pressure."
+        )
+    if "crime" in genre_text or "heist" in genre_text:
+        dynamics.append(
+            "A character who built trust under false pretenses now faces the cost of that choice."
+        )
+
+    defaults = [
+        "A protagonist wants security but must trade comfort for agency.",
+        "A gatekeeping institution turns ordinary ambition into moral pressure.",
+        "Secondary characters reveal different survival strategies under the same rules.",
+    ]
+    for fallback in defaults:
+        if len(dynamics) >= 3:
+            break
+        if fallback not in dynamics:
+            dynamics.append(fallback)
+
+    return dynamics
 
 
 def _infer_visual_language(detail: TitleDetail) -> VisualLanguage:
