@@ -1,10 +1,16 @@
 import type { NextRequest } from "next/server";
 import { mockGetTitleDetail } from "@/lib/providers/mock";
-import { getTitleDetail } from "@/lib/providers/tmdb";
+import * as omdb from "@/lib/providers/omdb";
+import * as tmdb from "@/lib/providers/tmdb";
 import type { MediaType } from "@/lib/schemas";
 
-const useMock = () =>
-  process.env.CINEPROMPT_PROVIDER === "mock" || !process.env.TMDB_API_KEY;
+function getProvider() {
+  const p = process.env.CINEPROMPT_PROVIDER;
+  if (p === "omdb" && process.env.OMDB_API_KEY) return "omdb";
+  if (p === "mock" || (!process.env.TMDB_API_KEY && !process.env.OMDB_API_KEY)) return "mock";
+  if (process.env.OMDB_API_KEY) return "omdb";
+  return "tmdb";
+}
 
 export async function GET(
   request: NextRequest,
@@ -12,11 +18,15 @@ export async function GET(
 ) {
   const { id } = await params;
   const mediaType = request.nextUrl.searchParams.get("media_type") as MediaType | null;
+  const provider = getProvider();
 
   try {
-    const detail = useMock()
-      ? mockGetTitleDetail(id)
-      : await getTitleDetail(id, mediaType);
+    const detail =
+      provider === "mock"
+        ? mockGetTitleDetail(id)
+        : provider === "omdb"
+          ? await omdb.getTitleDetail(id, mediaType)
+          : await tmdb.getTitleDetail(id, mediaType);
     return Response.json(detail);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
